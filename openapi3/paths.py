@@ -69,12 +69,12 @@ class Path(ObjectBase):
             # this will be iterated over later
             self.parameters = []
 
-    def _resolve_references(self):
+    def _resolve_references(self, **kwargs):
         """
         Overloaded _resolve_references to allow us to verify parameters after
         we've got all references settled.
         """
-        super(self.__class__, self)._resolve_references()
+        super(self.__class__, self)._resolve_references(**kwargs)
 
         # this will raise if parameters are invalid
         _validate_parameters(self)
@@ -190,12 +190,12 @@ class Operation(ObjectBase):
         # Store request object
         self._request = requests.Request()
 
-    def _resolve_references(self):
+    def _resolve_references(self, **kwargs):
         """
         Overloaded _resolve_references to allow us to verify parameters after
         we've got all references settled.
         """
-        super(self.__class__, self)._resolve_references()
+        super(self.__class__, self)._resolve_references(**kwargs)
 
         # this will raise if parameters are invalid
         _validate_parameters(self)

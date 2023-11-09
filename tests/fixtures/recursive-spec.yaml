@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Example API
+  description: A sample API to illustrate Recursive OpenAPI components
+paths:
+  /list:
+    get:
+      description: Returns a list of objects
+      responses:
+        "200":
+          description: Success
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/MyObject"
+components:
+  schemas:
+    MyObject:
+      type: object
+      properties:
+        name:
+          type: string
+        child:
+          $ref: "#/components/schemas/MyObject"

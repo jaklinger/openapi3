@@ -186,3 +186,10 @@ def test_request_bodies_ref(ref_request_bodies):
     error_messages = [getattr(error, "message") for error in spec.errors()]
     found_errors = bool(error_messages)
     assert not found_errors, error_messages
+
+
+def test_recursive_spec(recursive_spec):
+    spec = OpenAPI(recursive_spec, validate=True)
+    error_messages = [getattr(error, "message") for error in spec.errors()]
+    found_errors = bool(error_messages)
+    assert not found_errors, error_messages

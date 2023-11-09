@@ -257,3 +257,10 @@ def ref_request_bodies():
     Provides a spec with a $ref to a requestBodies definition
     """
     yield _get_parsed_yaml("ref-request-bodies.yaml")
+
+@pytest.fixture
+def recursive_spec():
+    """
+    Provides a spec with recursive refs
+    """
+    yield _get_parsed_yaml("recursive-spec.yaml")

@@ -1,4 +1,5 @@
 import sys
+from typing import Hashable
 
 from .errors import SpecError, ReferenceResolutionError
 
@@ -481,13 +482,22 @@ class ObjectBase(object):
 
         return result
 
-    def _resolve_references(self):
+    def _resolve_references(self, resolved_references=None):
         """
         Resolves all reference objects below this object and notes their original
         value was a reference.
         """
         # don't circular import
         reference_type = ObjectBase.get_object_type("Reference")
+
+        if resolved_references is None:
+            resolved_references = set()
+        if isinstance(self, Hashable):
+            if self in resolved_references:
+                return
+            else:
+                resolved_references.add(self)
+
 
         for slot in self.__slots__:
             if slot.startswith("_"):
@@ -518,10 +528,11 @@ class ObjectBase(object):
                 proxy = ReferenceProxy(resolved_value, value)
 
                 # resolved
+                resolved_references.add(value)
                 setattr(self, slot, proxy)
             elif issubclass(type(value), ObjectBase) or isinstance(value, Map):
                 # otherwise, continue resolving down the tree
-                value._resolve_references()
+                value._resolve_references(resolved_references=resolved_references)
             elif isinstance(value, list):
                 # if it's a list, resolve its item's references
                 resolved_list = []
@@ -541,10 +552,11 @@ class ObjectBase(object):
                         # TODO: remove _original_ref
                         resolved_value._original_ref = value
                         proxy = ReferenceProxy(resolved_value, value)
+                        resolved_references.add(item)
                         resolved_list.append(proxy)
                     else:
                         if issubclass(type(item), ObjectBase) or isinstance(item, Map):
-                            item._resolve_references()
+                            item._resolve_references(resolved_references=resolved_references)
                         resolved_list.append(item)
 
                 setattr(self, slot, resolved_list)
@@ -624,13 +636,16 @@ class Map(dict):
 
         self.update(dct)
 
-    def _resolve_references(self):
+    def _resolve_references(self, resolved_references=None):
         """
         This has been added to allow propagation of reference resolution as defined
         in :any:`ObjectBase._resolve_references`.  This implementation simply
         calls the same on all values in this Map.
         """
         reference_type = ObjectBase.get_object_type("Reference")
+
+        if resolved_references is None:
+            resolved_references = set()
 
         for key, value in self.items():
             if isinstance(value, reference_type):
@@ -657,9 +672,10 @@ class Map(dict):
                 proxy = ReferenceProxy(resolved_value, value)
 
                 # resolved
+                resolved_references.add(value)
                 self[key] = proxy
             else:
-                value._resolve_references()
+                value._resolve_references(resolved_references=resolved_references)
 
     def _clone(self):
         """
